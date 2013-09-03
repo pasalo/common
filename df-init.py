@@ -13,13 +13,7 @@ import Keys
 import Config
 import utils
 
-CFG_EXAMPLE_SERVER = """\
-{
-    "version": 1
-}
-"""
-
-CFG_EXAMPLE_CLIENT = """\
+CFG_EXAMPLE = """\
 {
     "version": 1
 }
@@ -34,7 +28,6 @@ def main():
     parser.add_argument ('--force',     action="store_true", help="Force operation")
     parser.add_argument ('--name',      action="store",      help="Your name")
     parser.add_argument ('--email',     action="store",      help="Your email")
-    parser.add_argument ('--add-cfg',   action="store",      help="Add configuration file: (srv or client)")
     ns = parser.parse_args()
 
     if ns.debug:
@@ -57,12 +50,8 @@ def main():
 
     # Configuration file
     config_fp = utils.get_config_fp (ns.confdir)
-    if ns.add_cfg == 'srv':
-        with open(config_fp, 'w+') as f:
-            f.write (CFG_EXAMPLE_SERVER)
-    elif ns.add_cfg == 'client':
-        with open(config_fp, 'w+') as f:
-            f.write (CFG_EXAMPLE_CLIENT)
+    with open(config_fp, 'w+') as f:
+        f.write (CFG_EXAMPLE)
 
     # Add configuration paramaters
     config = Config.Config (ns.confdir)
