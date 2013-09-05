@@ -93,7 +93,7 @@ def main():
 
     # Server + Client
     elif ns.op == 'run':
-        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port)
+        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.key)
         client_server.execute()
 
 
