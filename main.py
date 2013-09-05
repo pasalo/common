@@ -30,6 +30,7 @@ def main():
 
     group = parser.add_argument_group('Server')
     group.add_argument ('--port',      action="store",      help="Customized HTTPS port (Default: 443)", type=int)
+    group.add_argument ('--key',       action="store_true", help="Serve public key from /key")
 
     group = parser.add_argument_group('Client')
     group.add_argument ('--downloads', action="store",      help="Downloads directory", metavar="PATH", default=utils.get_downloads_default())
@@ -52,7 +53,7 @@ def main():
 
     # Server
     if ns.op == 'server':
-        srv = HTTPS.Server (keys, channels, config, ns.port)
+        srv = HTTPS.Server (keys, channels, config, ns.port, ns.key)
         srv.run()
 
     # Client

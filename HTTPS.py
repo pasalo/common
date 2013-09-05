@@ -11,6 +11,8 @@ import json
 import logging
 import tempfile
 
+import Keys
+
 from twisted.web import server, resource
 from twisted.internet import reactor, ssl
 from twisted.python.log import err
@@ -18,7 +20,7 @@ from twisted.protocols.basic import FileSender
 
 
 class Server_Resources (resource.Resource):
-    isLeaf = True
+    isLeaf = False
 
     def __init__ (self, server):
         resource.Resource.__init__ (self)
@@ -73,21 +75,40 @@ class Server_Resources (resource.Resource):
 
 
 
+class Server_Resources_Key (resource.Resource):
+    isLeaf = True
+
+    def __init__ (self, server):
+        resource.Resource.__init__ (self)
+        self.server = server
+
+    def render_GET (self, request):
+        keys = Keys.Manager (self.server.config.conf_basedir)
+        return str(keys.get_gpg_public_key())
+
+
+
 
 class Server:
     DEFAULT_TCP_PORT = 443
 
-    def __init__ (self, key_manager, channels, config, port=None):
+    def __init__ (self, key_manager, channels, config, port=None, serve_key=None):
         self.key_manager     = key_manager
         self.channel_manager = channels
         self.config          = config
         self.tcp_port        = port or self.DEFAULT_TCP_PORT
+        self.serve_key       = serve_key
 
     def run(self):
         tlsctxFactory = ssl.DefaultOpenSSLContextFactory (self.key_manager.https_key,
                                                           self.key_manager.https_crt,
                                                           ssl.SSL.TLSv1_METHOD)
 
+        root = Server_Resources(self)
+
+        if self.serve_key:
+            root.putChild ('key', Server_Resources_Key(self))
+
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
-        reactor.listenSSL (self.tcp_port, server.Site(Server_Resources(self)), tlsctxFactory)
+        reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory)
         reactor.run()
