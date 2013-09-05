@@ -1,4 +1,6 @@
 language: python
 python:
   - "2.7"
+install: |
+	sudo apt-get install -y python-gnupg python-twisted
 script: python qa/run.py
