@@ -12,6 +12,13 @@ from subprocess import Popen, PIPE
 
 import utils
 
+
+def get_gpg_binary():
+    for binary in ('gpg2', 'gpg'):
+        tmp = utils.which (binary)
+        if tmp:
+            return tmp
+
 class Manager:
     KEY_TYPE     = 'RSA'
     KEY_LENGTH   = 4096
@@ -24,6 +31,7 @@ class Manager:
         self.gpg_basedir = os.path.join (basedir, 'gpg')
 
         self.gpg = gnupg.GPG (gnupghome = self.gpg_basedir,
+                              gpgbinary = get_gpg_binary(),
                               verbose   = False)
         self.gpg.encoding = 'utf-8'
 
