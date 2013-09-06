@@ -1,11 +1,6 @@
 import os
 import sys
 
-# Execution
-#
-def run_py (cmd):
-    os.system ('%s %s' %(sys.executable, cmd))
-
 
 # Colors
 #
@@ -25,3 +20,22 @@ def blue (s):
 #
 qa_dir  = os.path.dirname(__file__)
 src_dir = os.path.normpath (os.path.join (qa_dir + '/..'))
+
+def src_py (py_name):
+    return os.path.join (src_dir, py_name)
+
+def system_py (name, args=''):
+    return os.system ('%s %s %s' %(sys.executable, src_py(name), args))
+
+def popen_py (name, args=''):
+    return os.popen ('%s %s %s' %(sys.executable, src_py(name), args), 'r')
+
+
+#
+#
+def pasalo_init_paths (paths, remove=True):
+    for path in paths:
+        if remove:
+            os.system ('rm -rf %s'%(path))
+
+        system_py ('%s/df-init.py --confdir=%s'%(src_dir, path))
