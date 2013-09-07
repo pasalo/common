@@ -1,10 +1,15 @@
 import os
+import sys
 import util
 import logging
+import threading
+import multiprocessing
 
 # Globals
 TMP1 = '/tmp/pasalo-QA-1'
 TMP2 = '/tmp/pasalo-QA-2'
+
+HOST1_PORT = 44300
 
 # Create keys
 util.pasalo_init_paths ([TMP1, TMP2])
@@ -38,3 +43,23 @@ util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1 --url=ht
 for d in [TMP1, TMP2]:
     host_keys = util.popen_py ('df-get-key.py', '--confdir=%s --list'%(d)).read()
     assert host_keys.count('pub id=') == 2
+
+# Launch server
+def run_server(p_srv):
+    p_srv.communicate()
+
+p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT)], stdout=sys.stdout, stderr=sys.stderr)
+p = multiprocessing.Process (target=run_server, args=[p_srv])
+p.start()
+
+timeout = util.wait_for_port('localhost', HOST1_PORT)
+assert not timeout
+
+# Ping
+ping1 = util.popen_py ('df-ping.py', '--confdir=%s host1'%(TMP2)).read()
+print ping1
+assert ping1.count('time=') == 5
+
+# Clean up
+p_srv.terminate()
+p.terminate()

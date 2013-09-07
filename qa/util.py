@@ -1,5 +1,9 @@
 import os
 import sys
+import time
+import socket
+import subprocess
+import contextlib
 
 
 # Colors
@@ -30,6 +34,10 @@ def system_py (name, args=''):
 def popen_py (name, args=''):
     return os.popen ('%s %s %s' %(sys.executable, src_py(name), args), 'r')
 
+def Popen_py (name, cmd_args, **args):
+    cmd = [sys.executable, src_py(name)] + cmd_args
+    return subprocess.Popen(cmd, **args)
+
 
 #
 #
@@ -39,3 +47,20 @@ def pasalo_init_paths (paths, remove=True):
             os.system ('rm -rf %s'%(path))
 
         system_py ('%s/df-init.py --confdir=%s'%(src_dir, path))
+
+# System
+#
+def wait_for_port (host, port):
+    for n in range(60):
+        try:
+            s = socket.socket (socket.AF_INET, socket.SOCK_STREAM)
+            with contextlib.closing(s):
+                s.connect ((host, port))
+        except Exception:
+            sys.stdout.write('.')
+            sys.stdout.flush()
+            time.sleep(1)
+        else:
+            break
+    else:
+        return 1
