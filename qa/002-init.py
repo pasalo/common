@@ -48,7 +48,7 @@ for d in [TMP1, TMP2]:
 def run_server(p_srv):
     p_srv.communicate()
 
-p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT)], stdout=sys.stdout, stderr=sys.stderr)
+p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT), '--bind=localhost'], stdout=sys.stdout, stderr=sys.stderr)
 p = multiprocessing.Process (target=run_server, args=[p_srv])
 p.start()
 
