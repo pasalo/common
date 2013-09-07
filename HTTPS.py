@@ -44,8 +44,6 @@ class Server_Resources (resource.Resource):
         # JSON parse
         op = json.loads (decrypted.data)
 
-        print op
-
         # Operations
         if op['op'] == 'ping':
             return self.server.key_manager.crypt ("PONG", decrypted.key_id)
