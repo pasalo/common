@@ -9,10 +9,11 @@ import time
 import json
 import types
 import random
-import urllib2
 import logging
+import StringIO
 import multiprocessing
 
+import pycurl
 import xattr
 
 import HTTPS
@@ -34,15 +35,26 @@ class Base:
         post = bytearray (p)
 
         # URL
-        url = link['url']
+        url = str(link['url'])
         if not url.startswith('https://'):
             url = 'https://' + url
 
         # HTTP Request
-        req = urllib2.Request (url)
-        req.add_data(post)
+        out = StringIO.StringIO()
+        in_ = StringIO.StringIO(post)
 
-        return urllib2.urlopen (req)
+        conn = pycurl.Curl()
+        conn.setopt(pycurl.URL, url)
+        conn.setopt(pycurl.READFUNCTION, in_.read)
+        conn.setopt(pycurl.WRITEFUNCTION, out.write)
+        conn.setopt(pycurl.POST, 1)
+        conn.setopt(pycurl.POSTFIELDSIZE, len(post))
+        conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+        conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+        conn.perform()
+        conn.close()
+
+        return out.getvalue()
 
     def _build_operation (self, op, parameters={}):
         op = {'op': op}
@@ -50,8 +62,7 @@ class Base:
         return json.dumps(op)
 
     def execute (self, content):
-        f = self._get_url_handler (content)
-        response = f.read()
+        response = self._get_url_handler (content)
 
         # Process response
         received = self.keys.decrypt(response)

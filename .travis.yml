@@ -8,6 +8,7 @@ before_install:
   - sudo apt-get install -y python-twisted
   - sudo apt-get install -y python-xattr
   - sudo apt-get install -y python-openssl
+  - sudo apt-get install -y python-pycurl
   - sudo apt-get install -y python-zope.interface
   - pip install -v python-gnupg
 
@@ -16,6 +17,7 @@ install:
   - ln -s /usr/lib/python2.7/dist-packages/twisted ~/virtualenv/python2.7/lib/python2.7/site-packages/
   - ln -s /usr/lib/python2.7/dist-packages/zope    ~/virtualenv/python2.7/lib/python2.7/site-packages/
   - ln -s /usr/lib/python2.7/dist-packages/OpenSSL ~/virtualenv/python2.7/lib/python2.7/site-packages/
+  - ln -s /usr/lib/python2.7/dist-packages/pycurl* ~/virtualenv/python2.7/lib/python2.7/site-packages/
 
 script:
   - python qa/run.py --debug
