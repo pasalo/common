@@ -13,7 +13,7 @@ import subprocess
 
 import util
 
-qa_dir = os.path.dirname(__file__) or '.'
+qa_dir = os.path.dirname(os.path.abspath(__file__))
 
 def get_tests():
     tests = []
