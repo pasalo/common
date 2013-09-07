@@ -210,16 +210,17 @@ class Client (Base):
 
 
 class Client_Server:
-    def __init__ (self, config, download_dir, keys, channels, port):
+    def __init__ (self, config, download_dir, keys, channels, port, interface):
         self.keys         = keys
         self.config       = config
         self.download_dir = download_dir
         self.channels     = channels
         self.port         = port
+        self.interface    = interface
 
     def _launch_server (self):
         def thread_logic():
-            srv = HTTPS.Server (self.keys, self.channels, self.config, self.port)
+            srv = HTTPS.Server (self.keys, self.channels, self.config, self.port, self.interface)
             srv.run()
 
         p = multiprocessing.Process (target=thread_logic, args=())

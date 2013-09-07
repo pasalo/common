@@ -30,6 +30,7 @@ def main():
 
     group = parser.add_argument_group('Server')
     group.add_argument ('--port',      action="store",      help="Customized HTTPS port (Default: 443)", type=int)
+    group.add_argument ('--bind',      action="store",      help="The hostname to bind (Default: all)", default='')
     group.add_argument ('--key',       action="store_true", help="Serve public key from /key")
 
     group = parser.add_argument_group('Client')
@@ -53,7 +54,7 @@ def main():
 
     # Server
     if ns.op == 'server':
-        srv = HTTPS.Server (keys, channels, config, ns.port, ns.key)
+        srv = HTTPS.Server (keys, channels, config, ns.port, ns.bind, ns.key)
         srv.run()
 
     # Client
@@ -93,7 +94,7 @@ def main():
 
     # Server + Client
     elif ns.op == 'run':
-        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.key)
+        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.bind)
         client_server.execute()
 
 

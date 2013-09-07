@@ -92,11 +92,12 @@ class Server_Resources_Key (resource.Resource):
 class Server:
     DEFAULT_TCP_PORT = 443
 
-    def __init__ (self, key_manager, channels, config, port=None, serve_key=None):
+    def __init__ (self, key_manager, channels, config, port=None, interface='', serve_key=None):
         self.key_manager     = key_manager
         self.channel_manager = channels
         self.config          = config
         self.tcp_port        = port or self.DEFAULT_TCP_PORT
+        self.interface       = interface
         self.serve_key       = serve_key
 
     def run(self):
@@ -112,5 +113,5 @@ class Server:
             Server_Resources.isLeaf = True
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
-        reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory)
+        reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory, interface=self.interface)
         reactor.run()
