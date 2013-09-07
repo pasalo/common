@@ -27,3 +27,14 @@ assert '-----END PGP PUBLIC KEY BLOCK-----' in key1
 assert '-----END PGP PUBLIC KEY BLOCK-----' in key2
 
 # Cross-import keys
+key1_fp = os.path.join(TMP1,'key')
+key2_fp = os.path.join(TMP2,'key')
+open(key1_fp, 'w+').write(key1)
+open(key2_fp, 'w+').write(key2)
+
+util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host2'%(TMP1, key2_fp))
+util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1 --url=https://localhost:%s/'%(TMP2, key1_fp, HOST1_PORT))
+
+for d in [TMP1, TMP2]:
+    host_keys = util.popen_py ('df-get-key.py', '--confdir=%s --list'%(d)).read()
+    assert host_keys.count('pub id=') == 2
