@@ -108,6 +108,8 @@ class Server:
 
         if self.serve_key:
             root.putChild ('key', Server_Resources_Key(self))
+        else:
+            Server_Resources.isLeaf = True
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
         reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory)
