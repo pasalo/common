@@ -10,7 +10,8 @@ before_install:
   - pip install -v python-gnupg
 
 install:
-  - ln -s /usr/lib/python2.7/dist-packages/xattr ~/virtualenv/python2.7/lib/python2.7/site-packages/
+  - ln -s /usr/lib/python2.7/dist-packages/xattr   ~/virtualenv/python2.7/lib/python2.7/site-packages/
+  - ln -s /usr/lib/python2.7/dist-packages/twisted ~/virtualenv/python2.7/lib/python2.7/site-packages/
 
 script:
   - python qa/run.py --debug
