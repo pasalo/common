@@ -1,9 +1,16 @@
 language: python
+
 python:
   - "2.7"
-install:
+
+before_install:
   - sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu/ precise main universe"
   - sudo apt-get install -y python-twisted
   - sudo apt-get install -y python-xattr
   - pip install -v python-gnupg
-script: python qa/run.py --debug
+
+install:
+  - ln -s /usr/lib/python2.7/dist-packages/xattr ~/virtualenv/python2.7/lib/python2.7/site-packages/
+
+script:
+  - python qa/run.py --debug
