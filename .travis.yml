@@ -6,4 +6,4 @@ install:
   - sudo apt-get install -y python-twisted
   - sudo apt-get install -y python-xattr
   - pip install -v python-gnupg
-script: python qa/run.py
+script: python qa/run.py --debug
