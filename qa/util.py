@@ -41,12 +41,17 @@ def Popen_py (name, cmd_args, **args):
 
 #
 #
-def pasalo_init_paths (paths, remove=True):
-    for path in paths:
-        if remove:
-            os.system ('rm -rf %s'%(path))
+def pasalo_init_path (path, **args):
+    KEYS_TO_PASS = ['downloads']
 
-        system_py ('%s/df-init.py --confdir=%s'%(src_dir, path))
+    cmd = '%s/df-init.py --confdir=%s'%(src_dir, path)
+
+    for key in KEYS_TO_PASS:
+        if key in args:
+            cmd += ' --%s=%s'%(key, args[key])
+
+    system_py (cmd)
+
 
 # System
 #

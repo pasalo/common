@@ -1,6 +1,7 @@
 import os
 import sys
 import util
+import shutil
 import logging
 import threading
 import multiprocessing
@@ -8,11 +9,19 @@ import multiprocessing
 # Globals
 TMP1 = '/tmp/pasalo-QA-1'
 TMP2 = '/tmp/pasalo-QA-2'
+DWN1 = '/tmp/pasalo-down-1'
+DWN2 = '/tmp/pasalo-down-2'
 
 HOST1_PORT = 44300
 
+# Preparison
+for d in (TMP1, TMP2, DWN1, DWN2):
+    logging.info ("Removing %s"%(d))
+    shutil.rmtree (d, ignore_errors=True)
+
 # Create keys
-util.pasalo_init_paths ([TMP1, TMP2])
+util.pasalo_init_path (TMP1, downloads=DWN1)
+util.pasalo_init_path (TMP2, downloads=DWN2)
 
 # Test directory structure
 for path in (TMP1, TMP2):
@@ -48,7 +57,7 @@ for d in [TMP1, TMP2]:
 def run_server(p_srv):
     p_srv.communicate()
 
-p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT), '--bind=localhost'], stdout=sys.stdout, stderr=sys.stderr)
+p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT), '--bind=localhost', '--downloads=%s'%(DWN1)], stdout=sys.stdout, stderr=sys.stderr)
 p = multiprocessing.Process (target=run_server, args=[p_srv])
 p.start()
 
@@ -59,6 +68,17 @@ assert not timeout
 ping1 = util.popen_py ('df-ping.py', '--confdir=%s host1'%(TMP2)).read()
 print ping1
 assert ping1.count('time=') == 5
+
+# Check channels
+channels = ['channel1', 'new.channel', 'yet.another.one']
+for channel in channels:
+    fp = os.path.join (DWN1, channel)
+    os.makedirs (fp, 0700)
+
+chan_list = util.popen_py ('main.py', 'channels --confdir=%s --name=host1'%(TMP2)).read()
+print chan_list
+for channel in channels:
+    assert channel in chan_list
 
 # Clean up
 p_srv.terminate()
