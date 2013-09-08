@@ -14,7 +14,7 @@ import StringIO
 import multiprocessing
 
 import pycurl
-import xattr
+import xattr_wrap as xattr
 
 import HTTPS
 import utils

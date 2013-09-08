@@ -8,8 +8,8 @@ import os
 import sys
 import json
 import time
-import xattr
 import utils
+import xattr_wrap as xattr
 
 class Channel:
     def __init__ (self, name):

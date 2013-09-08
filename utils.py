@@ -11,7 +11,8 @@ import select
 import hashlib
 import subprocess
 
-import xattr
+import xattr_wrap as xattr
+
 
 
 #
