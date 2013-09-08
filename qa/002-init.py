@@ -2,6 +2,7 @@ import os
 import sys
 import util
 import shutil
+import hashlib
 import logging
 import threading
 import multiprocessing
@@ -79,6 +80,22 @@ chan_list = util.popen_py ('main.py', 'channels --confdir=%s --name=host1'%(TMP2
 print chan_list
 for channel in channels:
     assert channel in chan_list
+
+# File in a channel
+CONTENT_NAME = "Example file.txt"
+CONTENT = "Visit http://pasalo.org/"
+
+hasher = hashlib.md5()
+hasher.update(CONTENT)
+md5 = hasher.hexdigest()
+
+open (os.path.join (DWN1, channels[1], CONTENT_NAME), 'w+').write(CONTENT)
+
+file_list = util.popen_py ('main.py', 'ls --confdir=%s --channels=%s --name=host1'%(TMP2, channels[1])).read()
+print file_list
+assert md5 in file_list
+assert CONTENT_NAME in file_list
+
 
 # Clean up
 p_srv.terminate()
