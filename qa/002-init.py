@@ -120,9 +120,14 @@ util.system_py ('main.py', 'sync --confdir=%s --name=host1 --downloads=%s'%(TMP2
 
 f1 = os.path.join (DWN1, channels[1], CONTENT_NAME)
 f2 = os.path.join (DWN1, channels[1], CONTENT_NAME)
+f_md5 = util.md5_file(f1)
 
 assert os.path.getsize(f1) == os.path.getsize(f2)
 assert open(f1,'r').read() == open(f2,'r').read()
+assert f_md5 == util.md5_file(f2)
+
+print (util.yellow(" * %s downloaded correctly: %s" %(CONTENT_NAME, f_md5)))
+
 
 # Clean up
 p_srv.terminate()

@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import socket
+import hashlib
 import subprocess
 import contextlib
 
@@ -67,3 +68,15 @@ def wait_for_port (host, port):
             break
     else:
         return 1
+
+# MD5
+#
+def md5_file (fullpath):
+    m = hashlib.md5()
+    with open(fullpath, 'r') as f:
+        while True:
+            cont = f.read(1024 * 1024)
+            if not cont:
+                break
+            m.update (cont)
+    return m.hexdigest()
