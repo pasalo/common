@@ -40,6 +40,7 @@ class Server_Resources (resource.Resource):
         # Decrypt it
         decrypted = self.server.key_manager.decrypt_file (tmpfile)
         request.setHeader("content-type", "text/plain")
+        tmpfile.close()
 
         # JSON parse
         op = json.loads (decrypted.data)
