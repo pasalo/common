@@ -157,8 +157,7 @@ class Download (Base):
         # Decrypt
         #
         p = self.keys.decrypt_popen (stdin  = subprocess.PIPE,
-                                     stdout = out_f,
-                                     stderr = sys.stderr)
+                                     stdout = out_f)
 
         # Handle download
         conn = self._get_url_handler (op)
