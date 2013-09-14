@@ -96,6 +96,16 @@ print file_list
 assert md5 in file_list
 assert CONTENT_NAME in file_list
 
+# Subscribe channels
+util.system_py ('df-links.py', 'subscribe --confdir=%s --channel=%s --name=host1'%(TMP2, channels[1]))
+util.system_py ('main.py', 'sync --confdir=%s --name=host1 --downloads=%s'%(TMP2, DWN2))
+
+f1 = os.path.join (DWN1, channels[1], CONTENT_NAME)
+f2 = os.path.join (DWN1, channels[1], CONTENT_NAME)
+
+assert os.path.getsize(f1) == os.path.getsize(f2)
+assert open(f1,'r').read() == open(f2,'r').read()
+print "%s downloaded correctly" %(f2)
 
 # Clean up
 p_srv.terminate()
