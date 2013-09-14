@@ -112,12 +112,16 @@ def format_size (num_bytes):
 
 
 class PopenAsync (subprocess.Popen):
-    def __init__(self, argv, stdin = subprocess.PIPE, timeout=0):
+    def __init__(self, argv,
+                 stdin = subprocess.PIPE,
+                 stdout = subprocess.PIPE,
+                 stderr = subprocess.PIPE,
+                 timeout=0):
         self.timeout = timeout
         subprocess.Popen.__init__(self, argv, shell = True,
                                   stdin  = stdin,
-                                  stdout = subprocess.PIPE,
-                                  stderr = subprocess.PIPE)
+                                  stdout = stdout,
+                                  stderr = stderr)
 
     def read(self, n = 1):
         poll = select.poll()

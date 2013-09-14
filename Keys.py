@@ -146,6 +146,12 @@ class Manager:
             logging.info ("Read %d from gpg" %(len(crypted_block)))
             callback (decrypted_block)
 
+    def decrypt_popen (self, **vargs):
+        args = ['--decrypt', "--always-trust"]
+        cmd  = ' '.join(self.gpg.make_args(args, False))
+
+        return utils.PopenAsync (cmd, **vargs)
+
 
 
     #

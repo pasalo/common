@@ -5,12 +5,15 @@ __email__     = "alvaro@alobbs.com"
 __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 
 import os
+import sys
 import time
 import json
 import types
+import thread
 import random
 import logging
 import StringIO
+import subprocess
 import multiprocessing
 
 import pycurl
@@ -51,10 +54,9 @@ class Base:
         conn.setopt(pycurl.POSTFIELDSIZE, len(post))
         conn.setopt(pycurl.SSL_VERIFYPEER, 0)
         conn.setopt(pycurl.SSL_VERIFYHOST, 0)
-        conn.perform()
-        conn.close()
 
-        return out.getvalue()
+        conn.out = out
+        return conn
 
     def _build_operation (self, op, parameters={}):
         op = {'op': op}
@@ -62,7 +64,11 @@ class Base:
         return json.dumps(op)
 
     def execute (self, content):
-        response = self._get_url_handler (content)
+        conn = self._get_url_handler (content)
+        conn.perform()
+        conn.close()
+
+        response = conn.out.getvalue()
 
         # Process response
         received = self.keys.decrypt(response)
@@ -122,33 +128,53 @@ class Download (Base):
 
     def execute (self):
         op = self._build_operation ('download file', {'channel': self.channel, 'file': self.filename})
-        f = self._get_url_handler (op)
 
-        # Customize the HTTP handler
-        def download_f_custom_read (self_f, *args):
-            tmp = self_f.read_orig (*args)
-            download_f_custom_read.received += len(tmp)
+        def progress(download_t, download_d, upload_t, upload_d):
+            self.download_t = download_t
+            self.download_d = download_d
+            self.upload_t   = upload_t
+            self.upload_d   = upload_d
 
             if self.callback_step:
-                self.callback_step (download_f_custom_read.received)
+                self.callback_step (download_t, download_d)
 
-            return tmp
+            if download_t:
+                percent = '%.02f' %((download_d * 100.0) / (download_t))
+                print "Received %s (%s%%)" %(utils.format_size(download_d), percent)
+            else:
+                print "Received %s" %(utils.format_size(download_d))
 
-        f.read_orig = f.read
-        f.read = types.MethodType (download_f_custom_read, f)
-        download_f_custom_read.received = 0
 
-        # Decrypt
+        # Prepare final file
+        #
         out_dir = os.path.join (self.download_dir, self.channel)
         if not os.path.exists (out_dir):
             os.makedirs (out_dir, 0700)
 
         out_fullpath = os.path.join (out_dir, self.filename)
-        self.keys.decrypt_file_to_path (f, out_fullpath)
+        out_f = open (out_fullpath, 'w+')
+
+        # Decrypt
+        #
+        p = self.keys.decrypt_popen (stdin  = subprocess.PIPE,
+                                     stdout = out_f,
+                                     stderr = sys.stderr)
+
+        # Handle download
+        conn = self._get_url_handler (op)
+        conn.setopt (pycurl.NOPROGRESS, 0)
+        conn.setopt (pycurl.PROGRESSFUNCTION, progress)
+        conn.setopt (pycurl.WRITEFUNCTION, p.stdin.write)
+        conn.perform()
 
         # Set file attributes
         xattr.setxattr (out_fullpath, 'md5_time', str(time.time()))
         xattr.setxattr (out_fullpath, 'md5', utils.md5_file(out_fullpath))
+
+        # Clean up
+        conn.close()
+        p.kill()
+
 
 
 class Sync (Base):
