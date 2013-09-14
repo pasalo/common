@@ -62,8 +62,6 @@ def wait_for_port (host, port):
             with contextlib.closing(s):
                 s.connect ((host, port))
         except Exception:
-            sys.stdout.write('.')
-            sys.stdout.flush()
             time.sleep(1)
         else:
             break
