@@ -3,6 +3,7 @@ import sys
 import time
 import socket
 import hashlib
+import argparse
 import subprocess
 import contextlib
 
@@ -80,3 +81,13 @@ def md5_file (fullpath):
                 break
             m.update (cont)
     return m.hexdigest()
+
+
+# CLI
+#
+def do_argparse():
+    # Argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument ('--debug',    action="store_true", help="Enable debugging")
+    parser.add_argument ('--new-keys', action="store_true", help="Do not reuse keys in case they're available")
+    return parser.parse_args()

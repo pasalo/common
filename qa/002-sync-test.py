@@ -12,8 +12,12 @@ TMP1 = '/tmp/pasalo-QA-1'
 TMP2 = '/tmp/pasalo-QA-2'
 DWN1 = '/tmp/pasalo-down-1'
 DWN2 = '/tmp/pasalo-down-2'
+KEYS_DIR = '/tmp/pasalo_QA-keys-reuse'
 
 HOST1_PORT = 44300
+
+# Argument parsing
+ns = util.do_argparse()
 
 # Preparison
 print (util.yellow(" * Remoing %s" %(', '.join([TMP1, TMP2, DWN1, DWN2]))))
@@ -23,10 +27,34 @@ for d in (TMP1, TMP2, DWN1, DWN2):
     shutil.rmtree (d, ignore_errors=True)
 
 # Create keys
-print (util.yellow(" * Creating user 1"))
-util.pasalo_init_path (TMP1, downloads=DWN1)
-print (util.yellow(" * Creating user 2"))
-util.pasalo_init_path (TMP2, downloads=DWN2)
+create_keys = False
+if ns.new_keys:
+    print (util.yellow(" * Forcing new keys creation"))
+    create_keys = True
+else:
+    re1_fp = os.path.join(KEYS_DIR, '1')
+    re2_fp = os.path.join(KEYS_DIR, '2')
+
+    if os.path.exists(re1_fp) and os.path.exists(re2_fp):
+        print (util.yellow(" * Reusing keys from %s" %(', '.join([re1_fp, re2_fp]))))
+        shutil.copytree (re1_fp, TMP1)
+        shutil.copytree (re2_fp, TMP2)
+    else:
+        create_keys = True
+
+if create_keys:
+    print (util.yellow(" * Creating user 1"))
+    util.pasalo_init_path (TMP1, downloads=DWN1)
+    print (util.yellow(" * Creating user 2"))
+    util.pasalo_init_path (TMP2, downloads=DWN2)
+
+    if not ns.new_keys:
+        print (util.yellow(" * Copying key to be reused"))
+        if not os.path.exists (KEYS_DIR):
+            os.makedirs (KEYS_DIR, 0700)
+        shutil.copytree (TMP1, re1_fp)
+        shutil.copytree (TMP2, re2_fp)
+
 
 # Test directory structure
 for path in (TMP1, TMP2):
