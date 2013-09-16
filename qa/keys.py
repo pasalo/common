@@ -4,7 +4,7 @@ __author__    = "Alvaro Lopez Ortega"
 __email__     = "alvaro@alobbs.com"
 __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 
-CACHE_KEYS_DIR = '/tmp/pasalo_QA-keys-reuse'
+CACHE_KEYS_DIR = '/var/tmp/pasalo_QA-keys-reuse'
 
 import os
 import shutil
