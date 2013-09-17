@@ -20,14 +20,17 @@ CFG_EXAMPLE = """\
 """
 
 def main():
+    default_name  = utils.get_default_name()
+    default_email = utils.get_default_email()
+
     # Argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument ('--confdir',   action="store",      help="Customized certificates directory", default=utils.get_basedir_default())
     parser.add_argument ('--downloads', action="store",      help="Downloads directory", default=utils.get_downloads_default())
     parser.add_argument ('--debug',     action="store_true", help="Enable debugging")
     parser.add_argument ('--force',     action="store_true", help="Force operation")
-    parser.add_argument ('--name',      action="store",      help="Your name")
-    parser.add_argument ('--email',     action="store",      help="Your email")
+    parser.add_argument ('--name',      action="store",      help="Your name (Default: %s)"%(default_name), default=default_name)
+    parser.add_argument ('--email',     action="store",      help="Your email (Default: %s)"%(default_email), default=default_email)
     ns = parser.parse_args()
 
     if ns.debug:
@@ -41,7 +44,7 @@ def main():
 
     # Create GPG keys
     keys = Keys.Manager (ns.confdir)
-    keys.keys_gpg_create(name=ns.name, email=ns.email)
+    keys.keys_gpg_create(ns.email, name=ns.name)
     keys.keys_https_create()
 
     # Download directory

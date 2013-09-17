@@ -22,8 +22,6 @@ def get_gpg_binary():
 class Manager:
     KEY_TYPE     = 'RSA'
     KEY_LENGTH   = 4096
-    NAME_REAL    = 'Annonymous'
-    NAME_EMAIL   = 'dont@have.one'
     NAME_COMMENT = "Downstream Flow"
 
     def __init__ (self, basedir):
@@ -57,7 +55,7 @@ class Manager:
 
         return True
 
-    def keys_gpg_create (self, name=None, email=None):
+    def keys_gpg_create (self, email, name):
         if self.__check_gpg_keys_dir():
             logging.debug ("Using GPG keys at %s" %(self.gpg_basedir))
             return
@@ -68,8 +66,8 @@ class Manager:
         key_input = self.gpg.gen_key_input (key_type     = self.KEY_TYPE,
                                             key_length   = self.KEY_LENGTH,
                                             name_comment = self.NAME_COMMENT,
-                                            name_real    = name  or self.NAME_REAL,
-                                            name_email   = email or self.NAME_EMAIL)
+                                            name_real    = name,
+                                            name_email   = email)
 
         logging.info ("Please, wait. Generating key...")
         key = self.gpg.gen_key (key_input)

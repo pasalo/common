@@ -7,16 +7,17 @@ __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 import os
 import sys
 import time
+import socket
 import select
+import getpass
 import hashlib
 import subprocess
 
 import xattr_wrap as xattr
 
 
-
 #
-# Pathsx
+# Paths & Defaults
 #
 def get_downloads_default():
     return os.path.expanduser ("~/Downloads/Pasalo")
@@ -27,6 +28,15 @@ def get_basedir_default():
 def get_config_fp (confdir=None):
     confdir = confdir or get_basedir_default()
     return os.path.join (confdir, 'config.json')
+
+def get_default_name():
+    return getpass.getuser()
+
+def get_default_email():
+    username = getpass.getuser()
+    hostname = socket.gethostname()
+    return '%s@s%s' %(username, hostname)
+
 
 #
 # Main & CLI
