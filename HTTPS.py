@@ -31,7 +31,7 @@ class Server_Resources (resource.Resource):
     def getChild(self, name, request):
         if name == '':
             return self
-        return resources.Resource.getChild(self, name, request)
+        return resource.Resource.getChild(self, name, request)
 
     def render_POST (self, request):
         # Read POST into a temporary file
