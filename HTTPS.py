@@ -7,6 +7,7 @@ __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 ## http://twistedmatrix.com/documents/current/web/examples/index.html
 
 import os
+import sys
 import json
 import logging
 import tempfile
@@ -17,6 +18,7 @@ from twisted.web import server, resource
 from twisted.internet import reactor, ssl
 from twisted.python.log import err
 from twisted.protocols.basic import FileSender
+from twisted.python import log
 
 
 class Server_Resources (resource.Resource):
@@ -39,7 +41,15 @@ class Server_Resources (resource.Resource):
 
         # Decrypt it
         decrypted = self.server.key_manager.decrypt_file (tmpfile)
+
         request.setHeader("content-type", "text/plain")
+
+        # Make sure we know the client
+        if not self.server.key_manager.is_gpg_key_in_ring (decrypted.key_id):
+            print ("WARNING: Unknown client (Key ID: %s)" %(decrypted.key_id))
+            request.setResponseCode(511)
+            return "ERROR: I'm sorry sir, I don't know any Mr. %s"%(str(decrypted.key_id))
+
         tmpfile.close()
 
         # JSON parse
@@ -52,7 +62,8 @@ class Server_Resources (resource.Resource):
         elif op['op'] == 'get channel list':
             channels = self.server.channel_manager.get_local_channels()
             channels_json = json.dumps(channels)
-            return self.server.key_manager.crypt (channels_json, decrypted.key_id)
+            channels_crypted = self.server.key_manager.crypt (channels_json, decrypted.key_id)
+            return channels_crypted
 
         elif op['op'] == 'get file list':
             files = self.server.channel_manager.get_local_files(op['channels'])
@@ -99,17 +110,21 @@ class Server:
         self.interface       = interface
         self.serve_key       = serve_key
 
+        # Activate Twister logging
+        if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
+            log.startLogging(sys.stdout)
+
     def run(self):
         tlsctxFactory = ssl.DefaultOpenSSLContextFactory (self.key_manager.https_key,
                                                           self.key_manager.https_crt,
                                                           ssl.SSL.TLSv1_METHOD)
 
-        root = Server_Resources(self)
-
         if self.serve_key:
+            root = Server_Resources(self)
             root.putChild ('key', Server_Resources_Key(self))
         else:
             Server_Resources.isLeaf = True
+            root = Server_Resources(self)
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
         reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory, interface=self.interface)

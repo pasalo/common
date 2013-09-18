@@ -21,6 +21,7 @@ import xattr_wrap as xattr
 
 import HTTPS
 import utils
+import Exceptions
 
 
 class Base:
@@ -31,9 +32,11 @@ class Base:
 
     def _get_url_handler (self, content):
         link  = self.config.get_link_from_id (self.id)
+        if not link:
+            raise Exceptions.Fatal("Could not find client '%s'"%(self.id))
         keyid = link['keyid']
 
-        # Build PING message
+        # Encrypt the POST
         p = self.keys.crypt (content, keyid)
         post = bytearray (p)
 
@@ -64,11 +67,34 @@ class Base:
         return json.dumps(op)
 
     def execute (self, content):
+        # Do request
         conn = self._get_url_handler (content)
         conn.perform()
-        conn.close()
 
+        # Check error code
+        errcode = conn.getinfo(pycurl.HTTP_CODE)
+        url     = conn.getinfo(pycurl.EFFECTIVE_URL)
+        ctype   = conn.getinfo(pycurl.CONTENT_TYPE)
+        dsize   = conn.getinfo(pycurl.SIZE_DOWNLOAD)
+        speed   = conn.getinfo(pycurl.SPEED_DOWNLOAD)
+
+        DEBUG = """
+        print "CODE", errcode
+        print "URL", url
+        print "CTYPE", ctype
+        print "down size", dsize
+        print "speed", speed
+        """
+
+        conn.close()
         response = conn.out.getvalue()
+
+        if errcode == 511:
+            raise Exceptions.Fatal("Your peer doesn't have your key indexed (Error: %s)" %(errcode))
+
+        if errcode != 200:
+            print "[WARNING] Returned HTTP code %s" %(errcode)
+            return
 
         # Process response
         received = self.keys.decrypt(response)

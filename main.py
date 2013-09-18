@@ -7,19 +7,21 @@ __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 import os
 import sys
 import time
+import colors
 import random
 import logging
 import argparse
 
 import Keys
+import utils
 import HTTPS
 import Config
 import Client
 import Channels
-import utils
+import Exceptions
 
 
-def main():
+def _main():
     # Argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument ('op', action="store", choices=['server', 'channels', 'ls', 'download', 'sync', 'client', 'run'], help="Operation")
@@ -61,8 +63,8 @@ def main():
     elif ns.op == 'channels':
         utils.assert_cli_args (['name'], ns)
         lst = Client.ChannelList (config, keys, ns.name)
-        channels = lst.execute()
-        for channel in channels:
+        channel_list = lst.execute()
+        for channel in channel_list:
             print (channel)
 
     elif ns.op == 'ls':
@@ -96,6 +98,13 @@ def main():
     elif ns.op == 'run':
         client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.bind)
         client_server.execute()
+
+
+def main():
+    try:
+        _main()
+    except Exceptions.Fatal, e:
+        print >> sys.stderr, colors.red('[ERROR]') + ' ' + e.msg
 
 
 if __name__ == '__main__':

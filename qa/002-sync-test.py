@@ -85,7 +85,7 @@ p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%
 p = multiprocessing.Process (target=run_server, args=[p_srv])
 p.start()
 
-print (colors.yellow(" * Waiting for server to be ready"))
+print (colors.yellow(" * Waiting for server to get ready"))
 timeout = util.wait_for_port('localhost', HOST1_PORT)
 assert not timeout
 

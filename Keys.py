@@ -73,6 +73,10 @@ class Manager:
         key = self.gpg.gen_key (key_input)
         logging.info ("Generated key %s" %(key.fingerprint))
 
+
+    def is_gpg_key_in_ring (self, keyid):
+        return keyid in [e['keyid'] for e in self.gpg.list_keys()]
+
     def get_gpg_key_by_fingerprint (self, fingerprint):
         for k in self.gpg.list_keys():
             if k['fingerprint'] == fingerprint:
