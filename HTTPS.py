@@ -28,6 +28,11 @@ class Server_Resources (resource.Resource):
         resource.Resource.__init__ (self)
         self.server = server
 
+    def getChild(self, name, request):
+        if name == '':
+            return self
+        return resources.Resource.getChild(self, name, request)
+
     def render_POST (self, request):
         # Read POST into a temporary file
         tmpfile = tempfile.TemporaryFile()
@@ -119,12 +124,9 @@ class Server:
                                                           self.key_manager.https_crt,
                                                           ssl.SSL.TLSv1_METHOD)
 
+        root = Server_Resources(self)
         if self.serve_key:
-            root = Server_Resources(self)
             root.putChild ('key', Server_Resources_Key(self))
-        else:
-            Server_Resources.isLeaf = True
-            root = Server_Resources(self)
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
         reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory, interface=self.interface)
