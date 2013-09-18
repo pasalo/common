@@ -13,7 +13,11 @@ import logging
 import threading
 import multiprocessing
 
+import init
+init.init()
+
 import keys
+import colors
 
 # Globals
 TMP1 = '/tmp/pasalo-QA-1'
@@ -27,7 +31,7 @@ HOST1_PORT = 44300
 ns = util.do_argparse()
 
 # Preparison
-print (util.yellow(" * Remoing %s" %(', '.join([TMP1, TMP2, DWN1, DWN2]))))
+print (colors.yellow(" * Remoing %s" %(', '.join([TMP1, TMP2, DWN1, DWN2]))))
 
 for d in (TMP1, TMP2, DWN1, DWN2):
     logging.info ("Removing %s"%(d))
@@ -45,7 +49,7 @@ for path in (TMP1, TMP2):
         assert os.path.exists (fp), "Path should exist %s"%(fp)
 
 # Get keys
-print (util.yellow(" * Checking keys"))
+print (colors.yellow(" * Checking keys"))
 
 key1 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP1)).read()
 key2 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP2)).read()
@@ -63,7 +67,7 @@ key2_fp = os.path.join(TMP2,'key')
 open(key1_fp, 'w+').write(key1)
 open(key2_fp, 'w+').write(key2)
 
-print (util.yellow(" * Cross-importing keys"))
+print (colors.yellow(" * Cross-importing keys"))
 
 util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host2'%(TMP1, key2_fp))
 util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1 --url=https://localhost:%s/'%(TMP2, key1_fp, HOST1_PORT))
@@ -76,24 +80,24 @@ for d in [TMP1, TMP2]:
 def run_server(p_srv):
     p_srv.communicate()
 
-print (util.yellow(" * Launching server"))
+print (colors.yellow(" * Launching server"))
 p_srv = util.Popen_py ('main.py', ['server', '--confdir=%s'%(TMP1), '--port=%d'%(HOST1_PORT), '--bind=localhost', '--downloads=%s'%(DWN1)], stdout=sys.stdout, stderr=sys.stderr)
 p = multiprocessing.Process (target=run_server, args=[p_srv])
 p.start()
 
-print (util.yellow(" * Waiting for server to be ready"))
+print (colors.yellow(" * Waiting for server to be ready"))
 timeout = util.wait_for_port('localhost', HOST1_PORT)
 assert not timeout
 
 # Ping
-print (util.yellow(" * Pinging server"))
+print (colors.yellow(" * Pinging server"))
 
 ping1 = util.popen_py ('df-ping.py', '--confdir=%s host1'%(TMP2)).read()
 print ping1
 assert ping1.count('time=') == 5
 
 # Check channels
-print (util.yellow(" * Channels show up"))
+print (colors.yellow(" * Channels show up"))
 
 channels = ['channel1', 'new.channel', 'yet.another.one']
 for channel in channels:
@@ -106,7 +110,7 @@ for channel in channels:
     assert channel in chan_list
 
 # File in a channel
-print (util.yellow(" * Channels contain the right files"))
+print (colors.yellow(" * Channels contain the right files"))
 
 CONTENT_NAME = "Example file.txt"
 CONTENT = "Visit http://pasalo.org/"
@@ -123,7 +127,7 @@ assert md5 in file_list
 assert CONTENT_NAME in file_list
 
 # Subscribe channels
-print (util.yellow(" * Synchronization"))
+print (colors.yellow(" * Synchronization"))
 
 util.system_py ('df-links.py', 'subscribe --confdir=%s --channel=%s --name=host1'%(TMP2, channels[1]))
 util.system_py ('main.py', 'sync --confdir=%s --name=host1 --downloads=%s'%(TMP2, DWN2))
@@ -136,7 +140,7 @@ assert os.path.getsize(f1) == os.path.getsize(f2)
 assert open(f1,'r').read() == open(f2,'r').read()
 assert f_md5 == util.md5_file(f2)
 
-print (util.yellow(" * %s downloaded correctly: %s" %(CONTENT_NAME, f_md5)))
+print (colors.yellow(" * %s downloaded correctly: %s" %(CONTENT_NAME, f_md5)))
 
 
 # Clean up

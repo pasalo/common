@@ -10,6 +10,10 @@ import sys
 import logging
 import subprocess
 
+import init
+init.init()
+
+import colors
 import util
 
 qa_dir = os.path.dirname(os.path.abspath(__file__))
@@ -31,7 +35,7 @@ def main():
 
     # Execute tests
     for f in get_tests():
-        print (util.green(f))
+        print (colors.green(f))
         fp = os.path.join (qa_dir, f)
         logging.info ('Executing: %s %s'%(sys.executable, fp))
         subprocess.check_call([sys.executable, fp] + sys.argv[1:])
