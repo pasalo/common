@@ -56,7 +56,7 @@ class Manager:
                 fname_size = os.path.getsize(fname_fp)
 
                 # No dirs within channels
-                if os.path.isdir (dir_fp):
+                if os.path.isdir (fname_fp):
                     continue
 
                 utils.set_md5_attr (fname_fp)
