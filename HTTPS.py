@@ -130,4 +130,6 @@ class Server:
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
         reactor.listenSSL (self.tcp_port, server.Site(root), tlsctxFactory, interface=self.interface)
+
+        print ("Pasalo server running port %s"%(self.tcp_port))
         reactor.run()
