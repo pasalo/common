@@ -44,7 +44,7 @@ class Manager:
 
             if not os.path.exists (dir_fp):
                 continue
-            if os.path.isdir (dir_fp):
+            if not os.path.isdir (dir_fp):
                 continue
 
             for f in os.listdir (dir_fp):
@@ -54,6 +54,10 @@ class Manager:
                 fname      = os.path.join (channel, f)
                 fname_fp   = os.path.join (dir_fp, f)
                 fname_size = os.path.getsize(fname_fp)
+
+                # No dirs within channels
+                if os.path.isdir (dir_fp):
+                    continue
 
                 utils.set_md5_attr (fname_fp)
                 fname_md5 = xattr.getxattr (fname_fp, 'md5')
