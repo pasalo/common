@@ -44,7 +44,7 @@ class Manager:
 
             if not os.path.exists (dir_fp):
                 continue
-            if not os.path.isdir (dir_fp):
+            if os.path.isdir (dir_fp):
                 continue
 
             for f in os.listdir (dir_fp):
