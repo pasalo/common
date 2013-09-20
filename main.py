@@ -75,18 +75,15 @@ def _main():
             print ("%s (%s) size=%s" %(f['path'], f['md5'], f['size']))
 
     elif ns.op == 'download':
-        time_start = time.time()
-        def step_callback(downloaded):
-            lapse = time.time() - time_start
-            print "%s: %s (%s/s)%s\r" %(ns.file, utils.format_size(downloaded), utils.format_size(downloaded/lapse), ' '*10),
-
         utils.assert_cli_args (['name','channels', 'file'], ns)
-        dwn = Client.Download (config, ns.downloads, keys, ns.name, ns.channels, ns.file, step_callback)
+        upd = Download_Reporter()
+        dwn = Client.Download (config, ns.downloads, keys, ns.name, ns.channels, ns.file, upd.step_cb, upd.finished_cb)
         dwn.execute()
 
     elif ns.op == 'sync':
         utils.assert_cli_args (['name'], ns)
-        sync = Client.Sync (config, ns.downloads, keys, ns.name)
+        upd = Download_Reporter()
+        sync = Client.Sync (config, ns.downloads, keys, ns.name, upd.step_cb, upd.finished_cb)
         sync.execute()
 
     elif ns.op == 'client':
@@ -96,8 +93,28 @@ def _main():
 
     # Server + Client
     elif ns.op == 'run':
-        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.bind)
+        upd = Download_Reporter()
+        client_server = Client.Client_Server (config, ns.downloads, keys, channels, ns.port, ns.bind, upd.step_cb, upd.finished_cb)
         client_server.execute()
+
+
+class Download_Reporter:
+    def __init__ (self):
+        self.time_start = time.time()
+
+    def step_cb (self, filename, download_t, download_d):
+        lapse = time.time() - self.time_start
+        speed = utils.format_size(download_d/lapse)
+
+        string = "%s - %s (%s/s)" %(filename, utils.format_size(download_d), speed)
+        string += ' ' * 8
+        string += '\b' * len(string)
+
+        sys.stdout.write (string)
+        sys.stdout.flush()
+
+    def finished_cb (self, dwn_obj):
+        print
 
 
 def main():

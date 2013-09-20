@@ -145,12 +145,13 @@ class FileList (Base):
 
 
 class Download (Base):
-    def __init__ (self, config, download_dir, keys, name_id, channel, filename, callback_step=None):
+    def __init__ (self, config, download_dir, keys, name_id, channel, filename, callback_step=None, callback_finished=None):
         Base.__init__ (self, config, keys, name_id)
-        self.download_dir  = download_dir
-        self.channel       = channel
-        self.filename      = filename
-        self.callback_step = callback_step
+        self.download_dir      = download_dir
+        self.channel           = channel
+        self.filename          = filename
+        self.callback_step     = callback_step
+        self.callback_finished = callback_finished
 
     def execute (self):
         op = self._build_operation ('download file', {'channel': self.channel, 'file': self.filename})
@@ -162,14 +163,7 @@ class Download (Base):
             self.upload_d   = upload_d
 
             if self.callback_step:
-                self.callback_step (download_t, download_d)
-
-            if download_t:
-                percent = '%.02f' %((download_d * 100.0) / (download_t))
-                print "Received %s (%s%%)" %(utils.format_size(download_d), percent)
-            else:
-                print "Received %s" %(utils.format_size(download_d))
-
+                self.callback_step (self.filename, download_t, download_d)
 
         # Prepare final file
         #
@@ -192,6 +186,9 @@ class Download (Base):
         conn.setopt (pycurl.WRITEFUNCTION, p.stdin.write)
         conn.perform()
 
+        if self.callback_finished:
+            self.callback_finished (self)
+
         # Set file attributes
         xattr.setxattr (out_fullpath, 'md5_time', str(time.time()))
         xattr.setxattr (out_fullpath, 'md5', utils.md5_file(out_fullpath))
@@ -203,9 +200,11 @@ class Download (Base):
 
 
 class Sync (Base):
-    def __init__ (self, config, download_dir, keys, name_id):
+    def __init__ (self, config, download_dir, keys, name_id, download_step=None, download_finished=None):
         Base.__init__ (self, config, keys, name_id)
-        self.download_dir = download_dir
+        self.download_dir      = download_dir
+        self.download_step     = download_step
+        self.download_finished = download_finished
 
     def execute (self):
         # Channels
@@ -251,19 +250,21 @@ class Sync (Base):
         for f in new_files:
             channel, filename = f['path'].split('/', 1)
 
-            download = Download (self.config, self.download_dir, self.keys, self.id, channel, filename)
+            download = Download (self.config, self.download_dir, self.keys, self.id, channel, filename, self.download_step, self.download_finished)
             download.execute()
 
 
 class Client (Base):
-    def __init__ (self, config, download_dir, keys, name_id):
+    def __init__ (self, config, download_dir, keys, name_id, download_step, download_finished):
         Base.__init__ (self, config, keys, name_id)
-        self.download_dir = download_dir
+        self.download_dir      = download_dir
+        self.download_step     = download_step
+        self.download_finished = download_finished
 
     def execute (self, max_times=None):
         n = 0
         while True:
-            sync = Sync (self.config, self.download_dir, self.keys, self.id)
+            sync = Sync (self.config, self.download_dir, self.keys, self.id, self.download_step, self.download_finished)
             sync.execute()
 
             # Check limit
@@ -278,13 +279,15 @@ class Client (Base):
 
 
 class Client_Server:
-    def __init__ (self, config, download_dir, keys, channels, port, interface):
-        self.keys         = keys
-        self.config       = config
-        self.download_dir = download_dir
-        self.channels     = channels
-        self.port         = port
-        self.interface    = interface
+    def __init__ (self, config, download_dir, keys, channels, port, interface, download_step, download_finished):
+        self.keys              = keys
+        self.config            = config
+        self.download_dir      = download_dir
+        self.channels          = channels
+        self.port              = port
+        self.interface         = interface
+        self.download_step     = download_step
+        self.download_finished = download_finished
 
     def _launch_server (self):
         def thread_logic():
@@ -308,7 +311,7 @@ class Client_Server:
 
         while True:
             for link_name in clients:
-                client = Client.Client (self.config, self.download_dir, self.keys, link_name)
+                client = Client (self.config, self.download_dir, self.keys, link_name, self.download_step, self.download_finished)
                 client.execute (max_times=1)
 
             # Wait until next iteration
