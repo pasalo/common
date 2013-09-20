@@ -211,12 +211,10 @@ class Sync (Base):
         # Channels
         lst = ChannelList (self.config, self.keys, self.id)
         channels = lst.execute()
-        print "channels", channels
 
         # Files
         lst = FileList (self.config, self.keys, self.id, ','.join(channels))
         remote_files = lst.execute()
-        print "remote_files", remote_files
 
         # Check local files
         new_files = []
@@ -240,6 +238,14 @@ class Sync (Base):
                 continue
 
             logging.info ("%s is up to date" %(remote_file['path']))
+
+        # Report
+        for f in new_files:
+            channel, filename = f['path'].split('/', 1)
+            print ('  #%s - %s (%s)' %(channel, filename, utils.format_size(f['size'])))
+
+        total_size = reduce (lambda x,y: x+y, [f['size'] for f in new_files])
+        print ("%d files: %s"%(len(new_files), utils.format_size(total_size)))
 
         # New files to fetch
         for f in new_files:
