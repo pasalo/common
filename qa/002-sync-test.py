@@ -26,6 +26,7 @@ DWN1 = '/tmp/pasalo-down-1'
 DWN2 = '/tmp/pasalo-down-2'
 
 HOST1_PORT = 44300
+HOST1_URL  = 'https://localhost:%s' %(HOST1_PORT)
 
 # Argument parsing
 ns = util.do_argparse()
@@ -39,7 +40,7 @@ for d in (TMP1, TMP2, DWN1, DWN2):
 
 # Create keys
 keys.init (ns.new_keys)
-keys.create ('1', TMP1, DWN1)
+keys.create ('1', TMP1, DWN1, HOST1_URL)
 keys.create ('2', TMP2, DWN2)
 
 # Test directory structure
@@ -55,7 +56,8 @@ key1 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP1)).read()
 key2 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP2)).read()
 
 assert key1 != key2
-assert len(key1) == len(key2)
+assert HOST1_URL in key1
+assert not HOST1_URL in key2
 assert '-----BEGIN PGP PUBLIC KEY BLOCK-----' in key1
 assert '-----BEGIN PGP PUBLIC KEY BLOCK-----' in key2
 assert '-----END PGP PUBLIC KEY BLOCK-----' in key1
@@ -70,7 +72,7 @@ open(key2_fp, 'w+').write(key2)
 print (colors.yellow(" * Cross-importing keys"))
 
 util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host2'%(TMP1, key2_fp))
-util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1 --url=https://localhost:%s/'%(TMP2, key1_fp, HOST1_PORT))
+util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1'%(TMP2, key1_fp))
 
 for d in [TMP1, TMP2]:
     host_keys = util.popen_py ('df-get-key.py', '--confdir=%s --list'%(d)).read()

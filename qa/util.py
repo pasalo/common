@@ -44,7 +44,7 @@ def Popen_py (name, cmd_args, **args):
 #
 #
 def pasalo_init_path (path, **args):
-    KEYS_TO_PASS = ['downloads']
+    KEYS_TO_PASS = ['downloads', 'public_url']
 
     cmd = '%s/df-init.py --confdir=%s'%(src_dir, path)
 

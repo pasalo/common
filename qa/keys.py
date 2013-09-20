@@ -23,7 +23,7 @@ def init (force):
         shutil.rmtree (CACHE_KEYS_DIR, ignore_errors=True)
         os.makedirs (CACHE_KEYS_DIR, 0700)
 
-def create (key_id, key_dir, download_dir):
+def create (key_id, key_dir, download_dir, public_url=None):
     re_fp = os.path.join(CACHE_KEYS_DIR, key_id)
 
     # Reuse
@@ -34,7 +34,7 @@ def create (key_id, key_dir, download_dir):
 
     # Create
     print (colors.yellow(" * Creating key %s"%(key_id)))
-    util.pasalo_init_path (key_dir, downloads=download_dir)
+    util.pasalo_init_path (key_dir, downloads=download_dir, public_url=public_url)
 
     # Populate cache
     print (colors.yellow(" * Copying key %s to QA cache: %s -> %s"%(key_id, key_dir, re_fp)))

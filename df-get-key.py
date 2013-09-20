@@ -9,6 +9,7 @@ import logging
 
 import Keys
 import utils
+import LinkInfo
 
 def print_keys(keys):
     for k in keys.get_key_list():
@@ -38,8 +39,9 @@ def main():
         print keys.get_gpg_public_keyid()
         raise SystemExit
 
-    # Get key
-    print keys.get_gpg_public_key()
+    # Public key bundle
+    li = LinkInfo.LinkInfo()
+    print li.get_uplink_info(ns.confdir)
 
 if __name__ == '__main__':
     main()
