@@ -8,6 +8,9 @@ import os
 import sys
 import json
 import fnmatch
+import StringIO
+
+import pycurl
 
 import Keys
 import utils
@@ -45,15 +48,32 @@ class Config:
     def get_link_names (self):
         return [l['id'] for l in self.config.get('links',[])]
 
+
+    def __read_cert (self, cert):
+        if not cert or cert == '-':
+            return sys.stdin.read()
+
+        elif cert.startswith('http'):
+            out = StringIO.StringIO()
+
+            conn = pycurl.Curl()
+            conn.setopt(pycurl.URL, cert)
+            conn.setopt(pycurl.WRITEFUNCTION, out.write)
+            conn.setopt(pycurl.SSL_VERIFYPEER, 0)
+            conn.setopt(pycurl.SSL_VERIFYHOST, 0)
+            conn.perform()
+            conn.close()
+
+            print out.getvalue()
+            return out.getvalue()
+
+        else:
+            with open (cert, 'r') as f:
+                return f.read()
+
     def link_add (self, cert_filename, id_name, url=None):
         # Read key
-        if not cert_filename or cert_filename == '-':
-            f = sys.stdin
-        else:
-            f = open (cert_filename, 'r')
-
-        cont = f.read()
-        f.close()
+        cont = self.__read_cert (cert_filename)
 
         # Add key to keyring
         keys = Keys.Manager (self.conf_basedir)
