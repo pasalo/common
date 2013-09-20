@@ -66,7 +66,7 @@ def md5_file (fullpath, blocksize=1024*1024):
 def set_md5_attr (fullpath, force=False):
     set_md5 = force
 
-    attrs = xattr.listxattr (fullpath)
+    attrs = xattr.listxattr (fullpath) or []
     if not 'md5' in attrs or \
        not 'md5_time' in attrs:
         set_md5 = True
