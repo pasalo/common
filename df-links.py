@@ -23,7 +23,6 @@ def main():
     group = parser.add_argument_group('Operations: add, del')
     group.add_argument ('--cert',    action="store",      help="Certificate file", default="")
     group.add_argument ('--name',    action="store",      help="Name of the link")
-    group.add_argument ('--url',     action="store",      help="URL to the uplink host")
 
     group = parser.add_argument_group('Operations: subscribe, unsubscribe')
     group.add_argument ('--channel', action="store",      help="Subscribe to a channel", metavar="NAME")
@@ -40,7 +39,7 @@ def main():
         utils.assert_cli_args (['name', 'cert'], ns)
 
         config = Config.Config (ns.confdir)
-        config.link_add (ns.cert, ns.name, ns.url)
+        config.link_add (ns.cert, ns.name)
         config.save()
 
     elif ns.op == 'del':

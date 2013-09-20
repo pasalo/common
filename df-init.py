@@ -25,12 +25,13 @@ def main():
 
     # Argument parsing
     parser = argparse.ArgumentParser()
-    parser.add_argument ('--confdir',   action="store",      help="Customized certificates directory", default=utils.get_basedir_default())
-    parser.add_argument ('--downloads', action="store",      help="Downloads directory", default=utils.get_downloads_default())
-    parser.add_argument ('--debug',     action="store_true", help="Enable debugging")
-    parser.add_argument ('--force',     action="store_true", help="Force operation")
-    parser.add_argument ('--name',      action="store",      help="Your name (Default: %s)"%(default_name), default=default_name)
-    parser.add_argument ('--email',     action="store",      help="Your email (Default: %s)"%(default_email), default=default_email)
+    parser.add_argument ('--confdir',    action="store",      help="Customized certificates directory", default=utils.get_basedir_default())
+    parser.add_argument ('--downloads',  action="store",      help="Downloads directory", default=utils.get_downloads_default())
+    parser.add_argument ('--debug',      action="store_true", help="Enable debugging")
+    parser.add_argument ('--force',      action="store_true", help="Force operation")
+    parser.add_argument ('--name',       action="store",      help="Your name (Default: %s)"%(default_name), default=default_name)
+    parser.add_argument ('--email',      action="store",      help="Your email (Default: %s)"%(default_email), default=default_email)
+    parser.add_argument ('--public_url', action="store",      help="Address clients connect to")
     ns = parser.parse_args()
 
     if ns.debug:
@@ -59,6 +60,10 @@ def main():
     # Add configuration paramaters
     config = Config.Config (ns.confdir)
     config.config['downloads'] = ns.downloads
+
+    if ns.public_url:
+        config.config['public_url'] = ns.public_url
+
     config.save()
 
 

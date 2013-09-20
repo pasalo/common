@@ -14,6 +14,7 @@ import pycurl
 
 import Keys
 import utils
+import LinkInfo
 
 
 class Config:
@@ -50,8 +51,9 @@ class Config:
 
 
     def __read_cert (self, cert):
+        # Read
         if not cert or cert == '-':
-            return sys.stdin.read()
+            raw = sys.stdin.read()
 
         elif cert.startswith('http'):
             out = StringIO.StringIO()
@@ -64,20 +66,25 @@ class Config:
             conn.perform()
             conn.close()
 
-            print out.getvalue()
-            return out.getvalue()
+            raw = out.getvalue()
 
         else:
             with open (cert, 'r') as f:
-                return f.read()
+                raw = f.read()
 
-    def link_add (self, cert_filename, id_name, url=None):
+        # Parse
+        info = LinkInfo.LinkInfo()
+        info.read_uplink_info(raw)
+        return info
+
+
+    def link_add (self, cert_filename, id_name):
         # Read key
-        cont = self.__read_cert (cert_filename)
+        uplink_info = self.__read_cert (cert_filename)
 
         # Add key to keyring
         keys = Keys.Manager (self.conf_basedir)
-        import_result = keys.add_gpg_key (cont)
+        import_result = keys.add_gpg_key (uplink_info['key'])
 
         fingerprint = import_result.fingerprints[0]
         key = keys.get_gpg_key_by_fingerprint (fingerprint)
@@ -96,6 +103,7 @@ class Config:
                 'id':    id_name,
             }
 
+            url = uplink_info.get('public_url')
             if url:
                 entry['url'] = url
 
@@ -112,7 +120,6 @@ class Config:
     #
     # Subscriptions
     #
-
     def link_add_subscription (self, link_name, channel):
         for l in self.config.get('links',[]):
             if l['id'] != link_name:
@@ -134,3 +141,15 @@ class Config:
                     new_subscriptions.append (e)
 
             l['subscriptions'] = new_subscriptions
+
+    #
+    # Uplink information
+    #
+    def get_uplink_info (self):
+        d = {'version': self.config['version']}
+
+        url = self.config.get ('public_url')
+        if url:
+            d['public_url'] = url
+
+        return d

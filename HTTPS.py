@@ -13,6 +13,8 @@ import logging
 import tempfile
 
 import Keys
+import LinkInfo
+import Exceptions
 
 from twisted.web import server, resource
 from twisted.internet import reactor, ssl
@@ -98,8 +100,8 @@ class Server_Resources_Key (resource.Resource):
         self.server = server
 
     def render_GET (self, request):
-        keys = Keys.Manager (self.server.config.conf_basedir)
-        return str(keys.get_gpg_public_key())
+        li = LinkInfo.LinkInfo()
+        return li.get_uplink_info (self.server.config.conf_basedir)
 
 
 
@@ -119,6 +121,12 @@ class Server:
         if logging.getLogger().getEffectiveLevel() == logging.DEBUG:
             log.startLogging(sys.stdout)
 
+
+    def __do_serve_key_checks (self):
+        uplink_info = self.config.get_uplink_info()
+        if not uplink_info.get('public_url'):
+            raise Exceptions.Fatal ("Missing 'public_url' property. Cannot serve the public key without it.")
+
     def run(self):
         tlsctxFactory = ssl.DefaultOpenSSLContextFactory (self.key_manager.https_key,
                                                           self.key_manager.https_crt,
@@ -126,6 +134,7 @@ class Server:
 
         root = Server_Resources(self)
         if self.serve_key:
+            self.__do_serve_key_checks()
             root.putChild ('key', Server_Resources_Key(self))
 
         logging.info ("Listerning new connection on port %s" %(self.tcp_port))
