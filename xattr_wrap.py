@@ -13,25 +13,25 @@ xattr_supported = True
 
 
 def _faked_setxattr (path, key, value):
-    path_dir  = os.path.dirname(path)
-    path_name = os.path.basename(path)
+    path_dir   = os.path.dirname(path)
+    path_name  = os.path.basename(path)
     props_file = os.path.join (path_dir, '.pasalo.props')
 
-    f = open (props_file, 'w+')
+    # Read properties file
+    f = open (props_file, 'rw+')
     fcntl.flock(f, fcntl.LOCK_EX)
+    cont = f.read() or '{}'
 
-    if os.path.getsize (props_file) > 0:
-        props = json.loads(f.read())
-        f.seek(0)
-    else:
-        props = {}
-
+    # Set property
+    props = json.loads(cont)
     if not props.has_key(path_name):
         props[path_name] = {}
 
     props[path_name][key] = value
-    f.write(json.dumps(props))
 
+    # Write file
+    f.seek(0)
+    f.write(json.dumps(props))
     fcntl.flock(f, fcntl.LOCK_UN)
     f.close()
 
