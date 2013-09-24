@@ -106,7 +106,7 @@ class Download_Reporter:
         if self.time_start is None:
             self.time_start = time.time()
 
-        lapse = time.time() - self.time_start
+        lapse = (time.time() - self.time_start) + 0.000001
         speed = utils.format_size(download_d/lapse)
 
         string = "%s - %s (%s/s)" %(filename, utils.format_size(download_d), speed)
