@@ -55,27 +55,33 @@ def assert_cli_args (params, ns):
 # MD5 file attr
 #
 def md5_file (fullpath, blocksize=1024*1024):
-    afile = open(fullpath, 'rb')
     hasher = hashlib.md5()
-    buf = afile.read(blocksize)
-    while len(buf) > 0:
-        hasher.update(buf)
-        buf = afile.read(blocksize)
+
+    with open(fullpath, 'rb') as f:
+        while True:
+            buf = f.read(blocksize)
+            if not buf:
+                break
+            hasher.update(buf)
+
     return hasher.hexdigest()
 
 def set_md5_attr (fullpath, force=False):
-    set_md5 = force
+    # Check the file attrs
+    attrs = xattr.listxattr (fullpath) or {}
 
-    attrs = xattr.listxattr (fullpath) or []
-    if not 'md5' in attrs or \
-       not 'md5_time' in attrs:
-        set_md5 = True
-    else:
-        mtime     = os.path.getmtime (fullpath)
-        attr_md5  = xattr.getxattr (fullpath, 'md5')
-        attr_time = xattr.getxattr (fullpath, 'md5_time')
+    set_md5 = not 'md5' in attrs or not 'md5_time' in attrs
+    set_md5 = set_md5 or force
 
-        if mtime > attr_md5:
+    # Update
+    if not set_md5:
+        if 'md5_time' in attrs:
+            mtime     = os.path.getmtime (fullpath)
+            attr_time = xattr.getxattr (fullpath, 'md5_time')
+
+            if mtime > attr_time:
+                set_md5 = True
+        else:
             set_md5 = True
 
     if set_md5:

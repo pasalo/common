@@ -100,9 +100,12 @@ def _main():
 
 class Download_Reporter:
     def __init__ (self):
-        self.time_start = time.time()
+        self.time_start = None
 
     def step_cb (self, filename, download_t, download_d):
+        if self.time_start is None:
+            self.time_start = time.time()
+
         lapse = time.time() - self.time_start
         speed = utils.format_size(download_d/lapse)
 

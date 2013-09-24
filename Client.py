@@ -145,11 +145,12 @@ class FileList (Base):
 
 
 class Download (Base):
-    def __init__ (self, config, download_dir, keys, name_id, channel, filename, callback_step=None, callback_finished=None):
+    def __init__ (self, config, download_dir, keys, name_id, channel, filename, remote_filesize=None, callback_step=None, callback_finished=None):
         Base.__init__ (self, config, keys, name_id)
         self.download_dir      = download_dir
         self.channel           = channel
         self.filename          = filename
+        self.remote_filesize   = remote_filesize
         self.callback_step     = callback_step
         self.callback_finished = callback_finished
 
@@ -189,14 +190,12 @@ class Download (Base):
         if self.callback_finished:
             self.callback_finished (self)
 
-        # Set file attributes
-        xattr.setxattr (out_fullpath, 'md5_time', str(time.time()))
-        xattr.setxattr (out_fullpath, 'md5', utils.md5_file(out_fullpath))
-
         # Clean up
         conn.close()
-        p.kill()
+        p.communicate()
 
+        # Set file attributes
+        utils.set_md5_attr (out_fullpath, force=True)
 
 
 class Sync (Base):
@@ -231,12 +230,18 @@ class Sync (Base):
             attr_md5  = xattr.getxattr (fp, 'md5')
             attr_time = utils.getxattr (fp, 'md5_time', 0)
 
-            if remote_file['size'] != size or \
-               remote_file['md5']  != attr_md5:
+            if remote_file['size'] != size:
+                new_files.append (remote_file)
+                continue
+
+            if remote_file['md5']  != attr_md5:
                 new_files.append (remote_file)
                 continue
 
             logging.info ("%s is up to date" %(remote_file['path']))
+
+        if not new_files:
+            return
 
         # Report
         for f in new_files:
@@ -250,7 +255,10 @@ class Sync (Base):
         for f in new_files:
             channel, filename = f['path'].split('/', 1)
 
-            download = Download (self.config, self.download_dir, self.keys, self.id, channel, filename, self.download_step, self.download_finished)
+            download = Download (self.config, self.download_dir, self.keys, self.id, channel, filename,
+                                 remote_filesize   = f['size'],
+                                 callback_step     = self.download_step,
+                                 callback_finished = self.download_finished)
             download.execute()
 
 
