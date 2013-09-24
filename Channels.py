@@ -56,10 +56,10 @@ class Manager:
                 fname_size = os.path.getsize(fname_fp)
 
                 # No dirs within channels
-                if os.path.isdir (fname_fp):
+                if not os.path.isfile (fname_fp):
                     continue
 
-                utils.set_md5_attr (fname_fp)
+                utils.set_md5_attr (fname_fp, force=False)
                 fname_md5 = xattr.getxattr (fname_fp, 'md5')
 
                 files.append ({'path': fname, 'size': fname_size, 'md5': fname_md5})

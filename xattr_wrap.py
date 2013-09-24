@@ -18,7 +18,7 @@ def _faked_setxattr (path, key, value):
     props_file = os.path.join (path_dir, '.pasalo.props')
 
     # Read properties file
-    f = open (props_file, 'rw+')
+    f = open (props_file, 'w+r')
     fcntl.flock(f, fcntl.LOCK_EX)
     cont = f.read() or '{}'
 
