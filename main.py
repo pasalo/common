@@ -77,7 +77,7 @@ def _main():
     elif ns.op == 'download':
         utils.assert_cli_args (['name','channels', 'file'], ns)
         upd = Download_Reporter()
-        dwn = Client.Download (config, ns.downloads, keys, ns.name, ns.channels, ns.file, upd.step_cb, upd.finished_cb)
+        dwn = Client.Download (config, ns.downloads, keys, ns.name, ns.channels, ns.file, callback_step=upd.step_cb, callback_finished=upd.finished_cb)
         dwn.execute()
 
     elif ns.op == 'sync':
