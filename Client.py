@@ -78,14 +78,6 @@ class Base:
         dsize   = conn.getinfo(pycurl.SIZE_DOWNLOAD)
         speed   = conn.getinfo(pycurl.SPEED_DOWNLOAD)
 
-        DEBUG = """
-        print "CODE", errcode
-        print "URL", url
-        print "CTYPE", ctype
-        print "down size", dsize
-        print "speed", speed
-        """
-
         conn.close()
         response = conn.out.getvalue()
 
