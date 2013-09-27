@@ -24,7 +24,7 @@ install:
 
 script:
   - python --version
-  - rm .coverage* || true
+  - rm -f .coverage*
   - coverage run qa/run.py --debug
 
 after_success:
