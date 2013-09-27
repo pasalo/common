@@ -10,8 +10,10 @@ before_install:
   - sudo apt-get install -y python-openssl
   - sudo apt-get install -y python-pycurl
   - sudo apt-get install -y python-zope.interface
+  - sudo apt-get install -y python-coverage
   - pip install -v python-gnupg
-  - pip install -v python-coveralls
+  - pip install -v coverage
+  - pip install -v coveralls
 
 install:
   - ln -s /usr/lib/python2.7/dist-packages/xattr   ~/virtualenv/python2.7/lib/python2.7/site-packages/
@@ -21,7 +23,9 @@ install:
   - ln -s /usr/lib/python2.7/dist-packages/pycurl* ~/virtualenv/python2.7/lib/python2.7/site-packages/
 
 script:
-  - python qa/run.py --debug
+  - python --version
+  - rm .coverage* || true
+  - coverage run qa/run.py --debug
 
 after_success:
   - coveralls
