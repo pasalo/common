@@ -11,6 +11,7 @@ before_install:
   - sudo apt-get install -y python-pycurl
   - sudo apt-get install -y python-zope.interface
   - pip install -v python-gnupg
+  - pip install -v python-coveralls
 
 install:
   - ln -s /usr/lib/python2.7/dist-packages/xattr   ~/virtualenv/python2.7/lib/python2.7/site-packages/
@@ -21,3 +22,6 @@ install:
 
 script:
   - python qa/run.py --debug
+
+after_success:
+  - coveralls
