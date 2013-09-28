@@ -63,7 +63,7 @@ def pasalo_init_path (path, **args):
 
     for key in KEYS_TO_PASS:
         if key in args:
-            cmd_args.append (' --%s=%s'%(key, args[key]))
+            cmd_args.append ('--%s=%s'%(key, args[key]))
 
     system_py ('df-init.py', cmd_args)
 
