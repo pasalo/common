@@ -7,6 +7,10 @@ import argparse
 import subprocess
 import contextlib
 
+import init
+init.init()
+
+import analysis
 
 # Colors
 #
@@ -30,13 +34,22 @@ src_dir = os.path.normpath (os.path.join (qa_dir + '/..'))
 def src_py (py_name):
     return os.path.join (src_dir, py_name)
 
-def system_py (name, args=''):
-    return os.system ('%s %s %s' %(sys.executable, src_py(name), args))
+def system_py (name, args=[]):
+    p = Popen_py (name, args, stdout=sys.stdout, stderr=sys.stderr)
+    p.communicate()
 
-def popen_py (name, args=''):
-    return os.popen ('%s %s %s' %(sys.executable, src_py(name), args), 'r')
+def popen_py_read (name, args=[]):
+    p = Popen_py (name, args, stdin=None, stdout=subprocess.PIPE, stderr=sys.stderr)
+    return p.communicate()[0]
 
 def Popen_py (name, cmd_args, **args):
+    def fn():
+        # Set a new coverage file
+        analysis.init_coverage_file (str(time.time()))
+
+    args['preexec_fn'] = fn
+    args['close_fds']  = True
+
     cmd = [sys.executable, src_py(name)] + cmd_args
     return subprocess.Popen(cmd, **args)
 

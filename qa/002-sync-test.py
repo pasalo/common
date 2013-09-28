@@ -16,6 +16,9 @@ import multiprocessing
 import init
 init.init()
 
+import analysis
+analysis.init_coverage(__file__)
+
 import keys
 import colors
 
@@ -52,8 +55,8 @@ for path in (TMP1, TMP2):
 # Get keys
 print (colors.yellow(" * Checking keys"))
 
-key1 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP1)).read()
-key2 = util.popen_py ('df-get-key.py', '--confdir=%s'%(TMP2)).read()
+key1 = util.popen_py_read ('df-get-key.py', ['--confdir=%s'%(TMP1)])
+key2 = util.popen_py_read ('df-get-key.py', ['--confdir=%s'%(TMP2)])
 
 assert key1 != key2
 assert HOST1_URL in key1
@@ -71,11 +74,11 @@ open(key2_fp, 'w+').write(key2)
 
 print (colors.yellow(" * Cross-importing keys"))
 
-util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host2'%(TMP1, key2_fp))
-util.system_py ('df-links.py', 'add --confdir=%s --cert=%s --name=host1'%(TMP2, key1_fp))
+util.system_py ('df-links.py', ['add', '--confdir=%s'%(TMP1), '--cert=%s'%(key2_fp), '--name=host2'])
+util.system_py ('df-links.py', ['add', '--confdir=%s'%(TMP2), '--cert=%s'%(key1_fp), '--name=host1'])
 
 for d in [TMP1, TMP2]:
-    host_keys = util.popen_py ('df-get-key.py', '--confdir=%s --list'%(d)).read()
+    host_keys = util.popen_py_read ('df-get-key.py', ['--confdir=%s'%(d), '--list'])
     assert host_keys.count('pub id=') == 2
 
 # Launch server
@@ -94,7 +97,7 @@ assert not timeout
 # Ping
 print (colors.yellow(" * Pinging server"))
 
-ping1 = util.popen_py ('df-ping.py', '--confdir=%s host1'%(TMP2)).read()
+ping1 = util.popen_py_read ('df-ping.py', ['--confdir=%s'%(TMP2), 'host1'])
 print ping1
 assert ping1.count('time=') == 5
 
@@ -106,7 +109,7 @@ for channel in channels:
     fp = os.path.join (DWN1, channel)
     os.makedirs (fp, 0700)
 
-chan_list = util.popen_py ('main.py', 'channels --confdir=%s --name=host1'%(TMP2)).read()
+chan_list = util.popen_py_read ('main.py', ['channels', '--confdir=%s'%(TMP2), '--name=host1'])
 print chan_list
 for channel in channels:
     assert channel in chan_list
@@ -123,7 +126,7 @@ md5 = hasher.hexdigest()
 
 open (os.path.join (DWN1, channels[1], CONTENT_NAME), 'w+').write(CONTENT)
 
-file_list = util.popen_py ('main.py', 'ls --confdir=%s --channels=%s --name=host1'%(TMP2, channels[1])).read()
+file_list = util.popen_py_read ('main.py', ['ls', '--confdir=%s'%(TMP2), '--channels=%s'%(channels[1]), '--name=host1'])
 print file_list
 assert md5 in file_list
 assert CONTENT_NAME in file_list
@@ -131,8 +134,8 @@ assert CONTENT_NAME in file_list
 # Subscribe channels
 print (colors.yellow(" * Synchronization"))
 
-util.system_py ('df-links.py', 'subscribe --confdir=%s --channel=%s --name=host1'%(TMP2, channels[1]))
-util.system_py ('main.py', 'sync --confdir=%s --name=host1 --downloads=%s'%(TMP2, DWN2))
+util.system_py ('df-links.py', ['subscribe', '--confdir=%s'%(TMP2), '--channel=%s'%(channels[1]), '--name=host1'])
+util.system_py ('main.py', ['sync', '--confdir=%s'%(TMP2), '--name=host1', '--downloads=%s'%(DWN2)])
 
 f1 = os.path.join (DWN1, channels[1], CONTENT_NAME)
 f2 = os.path.join (DWN1, channels[1], CONTENT_NAME)

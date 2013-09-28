@@ -4,6 +4,9 @@ __author__    = "Alvaro Lopez Ortega"
 __email__     = "alvaro@alobbs.com"
 __copyright__ = "Copyright (C) 2013 Alvaro Lopez Ortega"
 
+import analysis
+analysis.init_coverage(__file__)
+
 import os
 import sys
 import time
@@ -19,7 +22,6 @@ import Config
 import Client
 import Channels
 import Exceptions
-
 
 def _main():
     # Argument parsing

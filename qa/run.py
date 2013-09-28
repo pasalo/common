@@ -13,6 +13,9 @@ import subprocess
 import init
 init.init()
 
+import analysis
+analysis.init_coverage_file(__file__)
+
 import colors
 import util
 
@@ -33,13 +36,16 @@ def main():
     if ns.debug:
         logging.basicConfig (level = logging.DEBUG)
 
+    coveragerc = os.path.abspath (os.path.join (qa_dir, '../.coveragerc'))
+    os.environ['COVERAGE_PROCESS_START'] = coveragerc
+
     # Execute tests
     for f in get_tests():
         print (colors.green(f))
         fp = os.path.join (qa_dir, f)
         logging.info ('Executing: %s %s'%(sys.executable, fp))
-        subprocess.check_call([sys.executable, fp] + sys.argv[1:])
 
+        subprocess.check_call ([sys.executable, fp] + sys.argv[1:])
 
 if __name__ == '__main__':
     main()
