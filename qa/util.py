@@ -59,13 +59,13 @@ def Popen_py (name, cmd_args, **args):
 def pasalo_init_path (path, **args):
     KEYS_TO_PASS = ['downloads', 'public_url']
 
-    cmd = '%s/df-init.py --confdir=%s'%(src_dir, path)
+    cmd_args = ['--confdir=%s'%(path)]
 
     for key in KEYS_TO_PASS:
         if key in args:
-            cmd += ' --%s=%s'%(key, args[key])
+            cmd_args.append (' --%s=%s'%(key, args[key]))
 
-    system_py (cmd)
+    system_py ('%s/df-init.py'%(src_dir), cmd_args)
 
 
 # System
